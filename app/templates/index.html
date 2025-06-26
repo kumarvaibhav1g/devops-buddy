@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>DevOps Buddy – AI Cloud Assistant</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-light: url("/static/background.avif") no-repeat center center fixed;
+      --bg-dark: #0f172a;
+    }
+
+    body {
+      background: var(--bg-light);
+      background-size: cover;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background 0.4s ease;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: #f1f5f9;
+    }
+
+    .toggle-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+    }
+
+    .clouds {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .cloud {
+      position: absolute;
+      background: url('https://pngimg.com/uploads/cloud/cloud_PNG15.png') no-repeat;
+      background-size: contain;
+      width: 200px;
+      height: 120px;
+      opacity: 0.3;
+      animation: floatClouds 60s linear infinite;
+    }
+
+    @keyframes floatClouds {
+      0% { transform: translateX(-200px); }
+      100% { transform: translateX(110vw); }
+    }
+
+    .container-3d {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 50px auto;
+      background: #ffffffcc;
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(15px);
+    }
+
+    .dark-mode .container-3d {
+      background: #1e293b;
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .glass-box {
+      background: #f9fafbb3;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .dark-mode .glass-box {
+      background: #334155b3;
+    }
+
+    .bot-response {
+      background-color: #ecfdf5;
+      border-left: 5px solid #10b981;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+
+    .dark-mode .bot-response {
+      background-color: #1e40af;
+      border-left: 5px solid #93c5fd;
+    }
+
+    pre {
+      background-color: #f3f4f6;
+      border-left: 5px solid #3b82f6;
+      padding: 15px;
+      border-radius: 12px;
+      white-space: pre-wrap;
+    }
+
+    .dark-mode pre {
+      background-color: #1e3a8a;
+      color: #f8fafc;
+      border-left: 5px solid #38bdf8;
+    }
+
+    .input-group > .form-control,
+    .input-group > .btn,
+    .form-select {
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cloud background overlay -->
+<div class="clouds">
+  <div class="cloud" style="top: 10%; left: -200px;"></div>
+  <div class="cloud" style="top: 30%; left: -500px; animation-delay: 10s;"></div>
+  <div class="cloud" style="top: 50%; left: -800px; animation-delay: 20s;"></div>
+</div>
+
+<!-- Dark mode toggle -->
+<button class="btn btn-sm btn-dark toggle-btn" onclick="document.body.classList.toggle('dark-mode')">
+  <i class="fas fa-moon"></i>
+</button>
+
+<div class="container-3d" data-aos="fade-up">
+  <h2 class="text-center mb-4" data-aos="zoom-in">🚀 DevOps Buddy</h2>
+
+  <!-- Chat UI -->
+  <div class="glass-box" data-aos="fade-right">
+    <div class="section-title">💬 Ask a Question</div>
+    <form id="chatForm" class="input-group mb-3">
+      <input type="text" class="form-control" placeholder="e.g., Restart EC2 instance via AWS CLI" id="question" required>
+      <select id="commandType" class="form-select">
+        <option value="">General</option>
+        <option value="AWS CLI">AWS CLI</option>
+        <option value="Docker">Docker</option>
+        <option value="Kubernetes">Kubernetes</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Ask</button>
+    </form>
+    <div id="chat" class="bot-response"></div>
+  </div>
+
+  <!-- Log Upload -->
+  <div class="glass-box" data-aos="flip-left">
+    <div class="section-title">📁 Upload Log File</div>
+    <form id="uploadForm" enctype="multipart/form-data" class="mb-3">
+      <input type="file" name="file" class="form-control mb-2" required>
+      <button type="submit" class="btn btn-secondary">Analyze Log</button>
+    </form>
+    <div id="logResult" class="bot-response"></div>
+  </div>
+
+  <!-- Artifact Generator -->
+  <div class="glass-box" data-aos="fade-left">
+    <div class="section-title">⚙️ Generate DevOps Artifact</div>
+    <form id="artifactForm" class="input-group mb-3">
+      <input type="text" class="form-control" id="artifactPrompt" placeholder="e.g., Dockerfile for Flask app" required>
+      <button class="btn btn-success" type="submit">Generate</button>
+    </form>
+    <pre id="artifactResult"></pre>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+
+<script>
+  // Chat
+  document.getElementById("chatForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const question = document.getElementById("question").value;
+    const commandType = document.getElementById("commandType").value;
+    document.getElementById("question").value = "";
+
+    const res = await fetch("/ask", {
+      method: "POST",
+      body: new URLSearchParams({ question, commandType }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    });
+
+    const data = await res.json();
+    document.getElementById("chat").innerText = data.response;
+  });
+
+  // Log Upload
+  document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const res = await fetch("/upload", { method: "POST", body: formData });
+    const data = await res.json();
+
+    document.getElementById("logResult").innerText = data.response || data.error;
+  });
+
+  // Artifact Generator
+  document.getElementById("artifactForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const prompt = document.getElementById("artifactPrompt").value;
+    document.getElementById("artifactPrompt").value = "";
+
+    const res = await fetch("/generate", {
+      method: "POST",
+      body: new URLSearchParams({ prompt }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    });
+
+    const data = await res.json();
+    document.getElementById("artifactResult").innerText = data.response;
+  });
+</script>
+
+</body>
+</html>
